@@ -10,100 +10,100 @@ declare i32 @fputc(i32, i8* nocapture) nounwind
 @A = private unnamed_addr global i64 0
 @B = private unnamed_addr global i64 0
 @C = private unnamed_addr global i64 0
-@SP = private unnamed_addr global i64* null
 define hidden i32 @main(i32 %argc, i8** %argv) norecurse nounwind {
   %ds = alloca [1024 x i64]
   %sp = getelementptr [1024 x i64], [1024 x i64]* %ds, i64 0, i64 0
-  store i64* %sp, i64** @SP
-  call fastcc void @_main()
+  %spp = alloca i64*
+  store i64* %sp, i64** %spp
+  call fastcc void @_main(i64** %spp)
   ret i32 0
 }
-define hidden fastcc void @a() #0 section ".text.a" {
+define hidden fastcc void @a(i64** %spp) #0 section ".text.a" {
   %1 = ptrtoint i64* @A to i64
-  call fastcc void @push(i64 %1)
+  call fastcc void @push(i64** %spp, i64 %1)
   ret void
 }
-define hidden fastcc void @b() #0 section ".text.b" {
+define hidden fastcc void @b(i64** %spp) #0 section ".text.b" {
   %1 = ptrtoint i64* @B to i64
-  call fastcc void @push(i64 %1)
+  call fastcc void @push(i64** %spp, i64 %1)
   ret void
 }
-define hidden fastcc void @c() #0 section ".text.c" {
+define hidden fastcc void @c(i64** %spp) #0 section ".text.c" {
   %1 = ptrtoint i64* @C to i64
-  call fastcc void @push(i64 %1)
+  call fastcc void @push(i64** %spp, i64 %1)
   ret void
 }
-define hidden fastcc void @and() #0 section ".text.and" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @and(i64** %spp) #0 section ".text.and" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = and i64 %2, %1
-  call fastcc void @push(i64 %3)
+  call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
-define hidden fastcc void @div() #0 section ".text.div" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @div(i64** %spp) #0 section ".text.div" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = urem i64 %2, %1
   %4 = udiv i64 %2, %1
-  call fastcc void @push(i64 %3)
-  call fastcc void @push(i64 %4)
+  call fastcc void @push(i64** %spp, i64 %3)
+  call fastcc void @push(i64** %spp, i64 %4)
   ret void
 }
-define hidden fastcc void @emit() #0 section ".text.emit" {
-  %1 = call fastcc i64 @pop()
+define hidden fastcc void @emit(i64** %spp) #0 section ".text.emit" {
+  %1 = call fastcc i64 @pop(i64** %spp)
   %2 = trunc i64 %1 to i32
   %stdout = load i8*, i8** @stdout
   call i32 @fputc(i32 %2, i8* %stdout)
   ret void
 }
-define hidden fastcc void @load() #0 section ".text.load" {
-  %1 = call fastcc i64 @pop()
+define hidden fastcc void @load(i64** %spp) #0 section ".text.load" {
+  %1 = call fastcc i64 @pop(i64** %spp)
   %2 = inttoptr i64 %1 to i64*
   %3 = load i64, i64* %2
-  call fastcc void @push(i64 %3)
+  call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
-define hidden fastcc void @lt() #0 section ".text.lt" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @lt(i64** %spp) #0 section ".text.lt" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = icmp slt i64 %2, %1
   %4 = sext i1 %3 to i64
-  call fastcc void @push(i64 %4)
+  call fastcc void @push(i64** %spp, i64 %4)
   ret void
 }
-define hidden fastcc i64 @pop() #0 section ".text.pop" {
-  %1 = load i64*, i64** @SP
+define hidden fastcc i64 @pop(i64** %spp) #0 section ".text.pop" {
+  %1 = load i64*, i64** %spp
   %2 = getelementptr i64, i64* %1, i64 -1
   %3 = load i64, i64* %2
-  store i64* %2, i64** @SP
+  store i64* %2, i64** %spp
   ret i64 %3
 }
-define hidden fastcc void @push(i64) #0 section ".text.push" {
-  %2 = load i64*, i64** @SP
+define hidden fastcc void @push(i64** %spp, i64) #0 section ".text.push" {
+  %2 = load i64*, i64** %spp
   %3 = getelementptr i64, i64* %2, i64 1
   store i64 %0, i64* %2
-  store i64* %3, i64** @SP
+  store i64* %3, i64** %spp
   ret void
 }
-define hidden fastcc void @store() #0 section ".text.store" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @store(i64** %spp) #0 section ".text.store" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = inttoptr i64 %1 to i64*
   store i64 %2, i64* %3
   ret void
 }
-define hidden fastcc void @sub() #0 section ".text.sub" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @sub(i64** %spp) #0 section ".text.sub" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = sub i64 %2, %1
-  call fastcc void @push(i64 %3)
+  call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
-define hidden fastcc void @xor() #0 section ".text.xor" {
-  %1 = call fastcc i64 @pop()
-  %2 = call fastcc i64 @pop()
+define hidden fastcc void @xor(i64** %spp) #0 section ".text.xor" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = call fastcc i64 @pop(i64** %spp)
   %3 = xor i64 %1, %2
-  call fastcc void @push(i64 %3)
+  call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
 ''')
@@ -157,7 +157,7 @@ define hidden fastcc void @xor() #0 section ".text.xor" {
         if w == ':':
             w = mangle(t.pop(0))
             print('define hidden fastcc void @' + w +
-                  '() #0 section ".text.' + w + '" {')
+                  '(i64** %spp) #0 section ".text.' + w + '" {')
             labelsym.n = 0
             varsym.n = 0
             continue
@@ -173,7 +173,7 @@ define hidden fastcc void @xor() #0 section ".text.xor" {
             yes = labelsym()
             no = labelsym()
             end = labelsym()
-            print('  %' + q + ' = call fastcc i64 @pop()')
+            print('  %' + q + ' = call fastcc i64 @pop(i64** %spp)')
             print('  %' + r + ' = icmp ne i64 %' + q + ', 0')
             print('  br i1 %' + r + ', label %' + yes + ', label %' + no)
             print(yes + ':')
@@ -204,9 +204,9 @@ define hidden fastcc void @xor() #0 section ".text.xor" {
         if x is None:
             if w not in M:
                 raise Exception('undefined word: ' + w)
-            print('  call fastcc void @' + mangle(w) + '()')
+            print('  call fastcc void @' + mangle(w) + '(i64** %spp)')
         else:
-            print('  call fastcc void @push(i64 ' + w + ')')
+            print('  call fastcc void @push(i64** %spp, i64 ' + w + ')')
 
 
 def main(argv):
