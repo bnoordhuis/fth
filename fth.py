@@ -49,16 +49,6 @@ define hidden fastcc void @div() #0 section ".text.div" {
   call fastcc void @push(i64 %4)
   ret void
 }
-;define hidden fastcc void @drop() #0 section ".text.drop" {
-;  call fastcc i64 @pop()
-;  ret void
-;}
-;define hidden fastcc void @dup() #0 section ".text.dup" {
-;  %1 = call fastcc i64 @pop()
-;  call fastcc void @push(i64 %1)
-;  call fastcc void @push(i64 %1)
-;  ret void
-;}
 define hidden fastcc void @emit() #0 section ".text.emit" {
   %1 = call fastcc i64 @pop()
   %2 = trunc i64 %1 to i32
@@ -109,13 +99,6 @@ define hidden fastcc void @sub() #0 section ".text.sub" {
   call fastcc void @push(i64 %3)
   ret void
 }
-;define hidden fastcc void @swap() #0 section ".text.swap" {
-;  %1 = call fastcc i64 @pop()
-;  %2 = call fastcc i64 @pop()
-;  call fastcc void @push(i64 %1)
-;  call fastcc void @push(i64 %2)
-;  ret void
-;}
 define hidden fastcc void @xor() #0 section ".text.xor" {
   %1 = call fastcc i64 @pop()
   %2 = call fastcc i64 @pop()
