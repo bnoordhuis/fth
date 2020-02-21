@@ -2,43 +2,6 @@ import re
 import sys
 
 
-def isblank(c):
-    return c in '\t\r\n '
-
-
-def lex(s, i, n):
-    while i < n and isblank(s[i]):
-        i += 1
-
-    j = i + 1
-
-    while j < n and not isblank(s[j]):
-        j += 1
-
-    return i, j
-
-
-def parse(s, i, n):
-    while i < n:
-        i, j = lex(s, i, n)
-
-        if s[i:j] == '(':
-            while j < n:
-                i, j = lex(s, j, n)
-
-                if s[i:j] == ')':
-                    break
-        elif s[i:j] == '\\':
-            while j < n and s[j] != '\n':
-                j += 1
-        else:
-            return i, j
-
-        i = j
-
-    return n, n # eof
-
-
 def compile(s):
     print('''
 attributes #0 = { norecurse nounwind alwaysinline }
@@ -193,26 +156,23 @@ define hidden fastcc void @xor() #0 section ".text.xor" {
         return 'L' + str(labelsym.n)
     labelsym.n = 0
 
-    i = 0
-    n = len(s)
-    r = []
+    s = re.sub(r'\\.*\n', '', s) # strip line comments
+    t = s.split()
     branches = []
 
-    while i < n:
-        i, j = parse(s, i, n)
-
-        w = s[i:j]
-        i = j
+    while t:
+        w = t.pop(0)
 
         if w == '':
             break # eof
 
+        if w == '(':
+            while ')' != t.pop(0):
+                pass
+            continue
+
         if w == ':':
-            i, j = parse(s, i, n)
-
-            w = mangle(s[i:j])
-            i = j
-
+            w = mangle(t.pop(0))
             print('define hidden fastcc void @' + w +
                   '() #0 section ".text.' + w + '" {')
             labelsym.n = 0
