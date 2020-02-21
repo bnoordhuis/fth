@@ -63,14 +63,6 @@ define hidden fastcc void @load(i64** %spp) #0 section ".text.load" {
   call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
-define hidden fastcc void @lt(i64** %spp) #0 section ".text.lt" {
-  %1 = call fastcc i64 @pop(i64** %spp)
-  %2 = call fastcc i64 @pop(i64** %spp)
-  %3 = icmp slt i64 %2, %1
-  %4 = sext i1 %3 to i64
-  call fastcc void @push(i64** %spp, i64 %4)
-  ret void
-}
 define hidden fastcc i64 @pop(i64** %spp) #0 section ".text.pop" {
   %1 = load i64*, i64** %spp
   %2 = getelementptr i64, i64* %1, i64 -1
@@ -106,12 +98,19 @@ define hidden fastcc void @xor(i64** %spp) #0 section ".text.xor" {
   call fastcc void @push(i64** %spp, i64 %3)
   ret void
 }
+define hidden fastcc void @zeq(i64** %spp) #0 section ".text.zeq" {
+  %1 = call fastcc i64 @pop(i64** %spp)
+  %2 = icmp eq i64 %1, 0
+  %3 = sext i1 %2 to i64
+  call fastcc void @push(i64** %spp, i64 %3)
+  ret void
+}
 ''')
 
     M = {
         '!'   : 'store',
         '-'   : 'sub',
-        '<'   : 'lt',
+        '0='  : 'zeq',
         '@'   : 'load',
         'a'   : 'a',
         'and' : 'and',
@@ -197,7 +196,7 @@ define hidden fastcc void @xor(i64** %spp) #0 section ".text.xor" {
             continue
 
         try:
-            x = int(w)
+            x = int(w[1:], 16) if w.startswith('$') else int(w)
         except ValueError:
             x = None
 
@@ -206,7 +205,7 @@ define hidden fastcc void @xor(i64** %spp) #0 section ".text.xor" {
                 raise Exception('undefined word: ' + w)
             print('  call fastcc void @' + mangle(w) + '(i64** %spp)')
         else:
-            print('  call fastcc void @push(i64** %spp, i64 ' + w + ')')
+            print('  call fastcc void @push(i64** %spp, i64 ' + str(x) + ')')
 
 
 def main(argv):
